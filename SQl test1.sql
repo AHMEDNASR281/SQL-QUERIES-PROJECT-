@@ -1,1 +1,1 @@
-SELECT * FROM Departments 
+SELECT * FROM Departments  
