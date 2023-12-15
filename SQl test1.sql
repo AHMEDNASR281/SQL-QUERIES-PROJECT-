@@ -1,1 +1,2 @@
-SELECT * FROM Departments  
+USE Company_SD
+SELECT * FROM Departments
