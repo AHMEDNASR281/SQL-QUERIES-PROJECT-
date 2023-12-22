@@ -216,10 +216,172 @@ group by Genre
 order by sum (f.Gross_Million - f.Budget_Million) desc
 
 
+ -- 12 Calculate the avg run_time per each genre
+SELECT Genre,AVG([Run_time(minute)]) AS Avg_Runtime,AVG(Rating) AS Avg_Genre_Rating,
+CASE
+   WHEN AVG(Rating) > 7 THEN 'HIGH'
+   ELSE 'LOW'
+   END AS Rating_Classification
+      FROM movie 
+        GROUP BY Genre
+	       ORDER BY Avg_Runtime DESC
+
+ -- 13 number of movies for each actor and the total avg revenue  
+
+SELECT (a.Actor_Fname+a.Actor_Lname)  AS Full_Name,
+COUNT(mo.Actor_ID) AS NumMoviesPerActor,
+AVG(Gross_Million-Budget_Million) AS Avg_Reveneu
+   FROM movie_actor mo 
+   JOIN actor a ON mo.Actor_ID = a.Actor_ID 
+   JOIN movie m ON m.Movie_id = mo.Movie_ID 
+   JOIN finance f ON f.Finance_ID = m.Finance_ID 
+       GROUP BY a.Actor_Fname+a.Actor_Lname 
+	     ORDER BY NumMoviesPerActor DESC
+
+
+-- 14 Count the movie for range of time
+
+CREATE PROC mv_count (@year1 INT , @year2 INT)  AS 
+
+SELECT  COUNT(Movie_id ) AS Num_Of_Movies, AVG(rating) AS Avg_Rating 
+   FROM movie
+     WHERE [Release year] BETWEEN @year1 AND @year2
+
+EXEC mv_count 2010, 2019
+
+
+-- 15 This stored procedure retrieves the number of movies for a specific genre and year.
+
+create or alter procedure Movies_By_Genre_and_year (@genre_param VARCHAR(255), @year_param INT )
+as
+ begin
+SELECT COUNT(Movie_id) AS Num_of_Movies_Per_Year
+    FROM movie 
+    WHERE Genre = @genre_param AND [Release year] = @year_param;
+
+end
+
+
+exec Movies_By_Genre_and_year 'Drama' , 2009
+
+
+-- 16 This stored procedure finds the movie with the highest budget and profit within a specific genre.
+
+CREATE or alter PROCEDURE Highest_profit_Movie_for_Genre (@genre_param VARCHAR(255))
+as 
+
+BEGIN
+
+    SELECT  top 1 movie_name,genre, max(gross_million - budget_million) as Profit 
+    FROM movie m join finance f on m.Finance_ID = f.Finance_ID
+    WHERE genre = @genre_param
+	group by Genre , Movie_name
+    ORDER BY Profit desc
+    
+END;
+
+
+exec Highest_profit_Movie_for_Genre 'Action'
 
 
 
+-- 17 procedure show the names of actor and director worked together 
+-- and the sum of profit of movies the made together 
+-- for number of movies you want 
 
 
+create or alter  proc top_DIRECT_ACTOR (@num int)
+
+as
+select top 10  Actor_Fname + ' ' + Actor_Lname as [Actor Name] 
+,direct_fname + ' ' + direct_lname as [Director Name]
+, sum (f.Gross_Million - f.Budget_Million) as [profit]
+
+from  
+actor a join movie_actor ma on a.Actor_ID = ma.Actor_ID 
+join
+movie m on ma.Movie_ID = m.Movie_id 
+join 
+movie_director md  on m.Movie_id = md.Movie_ID 
+join 
+director d on md.Direct_ID = d.Direct_ID 
+join 
+finance f on m.Finance_ID = f.Finance_ID 
+
+group by Actor_Fname + ' ' + Actor_Lname, direct_fname + ' ' + direct_lname 
+order by profit desc
 
 
+exec top_DIRECT_ACTOR 5
+
+
+-- 18  top 3 making profit Genres.
+
+
+select  top 3  genre, sum (f.Gross_Million - f.Budget_Million) as [Profit of Genre] from movie m join finance f 
+on m.Finance_ID = f.Finance_ID 
+group by Genre 
+order by sum (f.Gross_Million - f.Budget_Million) desc 
+
+
+-- 19 Calculate the avg run_time per each genre  
+
+SELECT Genre,AVG([Run_time(minute)]) AS Avg_Runtime,AVG(Rating) AS Avg_Genre_Rating,
+CASE
+   WHEN AVG(Rating) > 7 THEN 'HIGH'
+   ELSE 'LOW'
+   END AS Rating_Classification
+      FROM movie 
+        GROUP BY Genre
+	       ORDER BY Avg_Runtime DESC
+
+
+-- 20 This trigger prevents the deletion of records from the director entity table
+--if there are associated movies in the movie_director table. 
+
+CREATE OR ALTER TRIGGER PreventDirectorDeletion
+ON director
+INSTEAD OF DELETE
+AS
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM deleted d
+        JOIN movie_director md ON d.Direct_ID = md.Direct_ID
+    )
+    BEGIN
+        PRINT ('Deletion failed. Directors associated with movies cannot be deleted')
+        ROLLBACK TRANSACTION
+    END
+    ELSE
+    BEGIN
+        DELETE FROM director
+        WHERE Direct_ID IN (SELECT Direct_ID FROM deleted)
+    END
+END
+
+
+-- 21 This trigger prevents the insertion of new records in the actor table
+--if the first and last name of the actor already exists
+
+CREATE OR ALTER TRIGGER PreventDuplicateActor
+ON actor
+INSTEAD OF INSERT
+AS
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM inserted i
+        JOIN actor a ON i.Actor_Fname = a.Actor_Fname AND i.Actor_Lname = a.Actor_Lname
+    )
+    BEGIN
+        PRINT ('Insertion failed. Actor with the same first name and last name already exists')
+        ROLLBACK TRANSACTION
+    END
+    ELSE
+    BEGIN
+        INSERT INTO actor (Actor_Fname, Actor_Lname, Actor_BD, Nat_ID)
+        SELECT Actor_Fname, Actor_Lname, Actor_BD, Nat_ID
+        FROM inserted
+    END
+END
