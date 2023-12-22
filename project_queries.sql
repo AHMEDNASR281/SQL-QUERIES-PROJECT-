@@ -25,20 +25,8 @@ where e.Genre ='Action'
 group by n.Nationality_ID , n.Nationality_Name 
 ORDER BY Nationality_count DESC
 
---- 3 The most actors nationalities which participated in action movies
-select top(1) count(n.Nationality_ID) as Nationality_count , n.Nationality_Name 
-from nationality n join actor a 
-on  n.Nationality_ID = a.Nat_ID
-join movie_actor m
-on a.Actor_ID = m.Actor_ID
-join movie e
-on m.Movie_ID = e.Movie_id
-where e.Genre ='Action'
-group by n.Nationality_ID , n.Nationality_Name 
-ORDER BY Nationality_count DESC
 
-
--- 4 number of movies for each actor and the total avg revenue  
+-- 3 number of movies for each actor and the total avg revenue  
 
 SELECT (a.Actor_Fname+a.Actor_Lname)  AS Full_Name,
 COUNT(mo.Actor_ID) AS NumMoviesPerActor,
@@ -50,7 +38,7 @@ AVG(Gross_Million-Budget_Million) AS Avg_Reveneu
        GROUP BY a.Actor_Fname+a.Actor_Lname 
 	     ORDER BY NumMoviesPerActor DESC
 
--- 5 Count the movie for range of time
+-- 4 Count the movie for range of time
 
 CREATE PROC mv_count (@year1 INT , @year2 INT)  AS 
 
@@ -61,7 +49,7 @@ SELECT  COUNT(Movie_id ) AS Num_Of_Movies, AVG(rating) AS Avg_Rating
 EXEC mv_count 2010, 2019
 
 
--- 6 This stored procedure retrieves the top N actors or directors 
+-- 5 This stored procedure retrieves the top N actors or directors 
 --based on the number of movies they've worked on.
 CREATE OR ALTER PROC GetTopMovieCountPerRole
     @roleType NVARCHAR(50), -- 'Actor' or 'Director'
@@ -89,7 +77,7 @@ END
 EXEC GetTopMovieCountPerRole @roleType = 'director', @topCount = 5
 
 
---- 7 This procedure recommends movies based on a specified genre and rating range
+--- 6 This procedure recommends movies based on a specified genre and rating range
 CREATE OR ALTER PROC GetMovieRecommendations
     @movieGenre NVARCHAR(50),
     @minRating INT,
@@ -104,7 +92,7 @@ END
 EXEC GetMovieRecommendations @movieGenre= 'Comedy', @minRating = 7, @maxRating = 9
 
 
--- 8 the actor who made the most number of films and the genre which is related to it 
+-- 7 the actor who made the most number of films and the genre which is related to it 
 
 	CREATE OR Alter VIEW ActorFilmCountView AS
 SELECT TOP 100 PERCENT 
@@ -161,7 +149,7 @@ Order by NumberOfFilms DESC
 
 
 
--- 9 the actor that get the greatest profit
+-- 8 the actor that get the greatest profit
 SELECT 
     Concat(Actor_Fname , Actor_Lname ) AS ActorName, 
     SUM(Gross_Million - Budget_Million) AS TotalProfit
@@ -181,7 +169,7 @@ ORDER BY
 
 
 
--- 10 duo actor and director who get the greates profit 
+-- 9 duo actor and director who get the greates profit 
 create or alter  proc top_DIRECT_ACTOR (@num int)
 
 as
@@ -207,7 +195,7 @@ order by profit desc
 exec top_DIRECT_ACTOR 5
 
 
--- 11 top 3 making profit Genres.
+-- 10 top 3 making profit Genres.
 
 
 select  top 3  genre, sum (f.Gross_Million - f.Budget_Million) as [Profit of Genre] from movie m join finance f 
@@ -216,7 +204,7 @@ group by Genre
 order by sum (f.Gross_Million - f.Budget_Million) desc
 
 
- -- 12 Calculate the avg run_time per each genre
+ -- 11 Calculate the avg run_time per each genre
 SELECT Genre,AVG([Run_time(minute)]) AS Avg_Runtime,AVG(Rating) AS Avg_Genre_Rating,
 CASE
    WHEN AVG(Rating) > 7 THEN 'HIGH'
@@ -226,7 +214,7 @@ CASE
         GROUP BY Genre
 	       ORDER BY Avg_Runtime DESC
 
- -- 13 number of movies for each actor and the total avg revenue  
+ -- 12 number of movies for each actor and the total avg revenue  
 
 SELECT (a.Actor_Fname+a.Actor_Lname)  AS Full_Name,
 COUNT(mo.Actor_ID) AS NumMoviesPerActor,
@@ -239,7 +227,7 @@ AVG(Gross_Million-Budget_Million) AS Avg_Reveneu
 	     ORDER BY NumMoviesPerActor DESC
 
 
--- 14 Count the movie for range of time
+-- 13 Count the movie for range of time
 
 CREATE PROC mv_count (@year1 INT , @year2 INT)  AS 
 
@@ -250,7 +238,7 @@ SELECT  COUNT(Movie_id ) AS Num_Of_Movies, AVG(rating) AS Avg_Rating
 EXEC mv_count 2010, 2019
 
 
--- 15 This stored procedure retrieves the number of movies for a specific genre and year.
+-- 14 This stored procedure retrieves the number of movies for a specific genre and year.
 
 create or alter procedure Movies_By_Genre_and_year (@genre_param VARCHAR(255), @year_param INT )
 as
@@ -265,7 +253,7 @@ end
 exec Movies_By_Genre_and_year 'Drama' , 2009
 
 
--- 16 This stored procedure finds the movie with the highest budget and profit within a specific genre.
+-- 15 This stored procedure finds the movie with the highest budget and profit within a specific genre.
 
 CREATE or alter PROCEDURE Highest_profit_Movie_for_Genre (@genre_param VARCHAR(255))
 as 
@@ -285,7 +273,7 @@ exec Highest_profit_Movie_for_Genre 'Action'
 
 
 
--- 17 procedure show the names of actor and director worked together 
+-- 16 procedure show the names of actor and director worked together 
 -- and the sum of profit of movies the made together 
 -- for number of movies you want 
 
@@ -315,7 +303,7 @@ order by profit desc
 exec top_DIRECT_ACTOR 5
 
 
--- 18  top 3 making profit Genres.
+-- 17  top 3 making profit Genres.
 
 
 select  top 3  genre, sum (f.Gross_Million - f.Budget_Million) as [Profit of Genre] from movie m join finance f 
@@ -324,7 +312,7 @@ group by Genre
 order by sum (f.Gross_Million - f.Budget_Million) desc 
 
 
--- 19 Calculate the avg run_time per each genre  
+-- 18 Calculate the avg run_time per each genre  
 
 SELECT Genre,AVG([Run_time(minute)]) AS Avg_Runtime,AVG(Rating) AS Avg_Genre_Rating,
 CASE
@@ -336,7 +324,7 @@ CASE
 	       ORDER BY Avg_Runtime DESC
 
 
--- 20 This trigger prevents the deletion of records from the director entity table
+-- 19 This trigger prevents the deletion of records from the director entity table
 --if there are associated movies in the movie_director table. 
 
 CREATE OR ALTER TRIGGER PreventDirectorDeletion
@@ -361,7 +349,7 @@ BEGIN
 END
 
 
--- 21 This trigger prevents the insertion of new records in the actor table
+-- 20 This trigger prevents the insertion of new records in the actor table
 --if the first and last name of the actor already exists
 
 CREATE OR ALTER TRIGGER PreventDuplicateActor
@@ -385,3 +373,58 @@ BEGIN
         FROM inserted
     END
 END
+
+
+
+--create view top_profitable_Director as
+select top(3) concat(d.Direct_Fname , d.Direct_Lname ) as Director_Name
+,sum (f.Gross_Million - f.Budget_Million) as Total_Profit 
+,v.Movie_name
+from director d join movie_director m
+on d.Direct_ID = m.Direct_ID
+join movie v
+on m.Movie_ID = v.Movie_id
+join finance f
+on f.Finance_ID = v.Finance_ID
+group by d.Direct_ID, d.Direct_Fname ,d.Direct_Lname ,v.Movie_name
+order by Total_Profit desc
+
+
+select * from top_profitable_Director
+
+
+---The most actors nationalities who participated in a specific genre movies
+create or alter proc most_actor_nationality 
+@gen varchar(50)  
+as
+begin
+	if exists ( select m.Genre from movie m where m.Genre = @gen )
+	   begin
+	  
+select top(1) count(n.Nationality_ID) as Nationality_count , n.Nationality_Name 
+from nationality n join actor a 
+on  n.Nationality_ID = a.Nat_ID
+join movie_actor m
+on a.Actor_ID = m.Actor_ID
+join movie e
+on m.Movie_ID = e.Movie_id
+where e.Genre =@gen
+group by n.Nationality_ID , n.Nationality_Name 
+ORDER BY Nationality_count DESC
+	end
+else 
+begin
+	print 'the genre is not exist' 
+	end
+end
+exec most_actor_nationality @gen = 'Adventure'
+
+
+--writers who have high rated movies (rating > 8) and the number of those movies
+
+SELECT we.Writer_ID, we.Writer_Fname, we.Writer_Lname, COUNT(mw.Movie_ID) AS High_Rated_Movies
+FROM writer we
+INNER JOIN movie_writer mw ON we.Writer_ID = mw.Writer_ID
+INNER JOIN movie me ON mw.Movie_ID = me.Movie_id
+WHERE me.Rating > 8
+GROUP BY we.Writer_ID, we.Writer_Fname, we.Writer_Lname
