@@ -376,7 +376,7 @@ END
 
 
 
---create view top_profitable_Director as
+-- 21 create view top_profitable_Director as
 select top(3) concat(d.Direct_Fname , d.Direct_Lname ) as Director_Name
 ,sum (f.Gross_Million - f.Budget_Million) as Total_Profit 
 ,v.Movie_name
@@ -393,7 +393,7 @@ order by Total_Profit desc
 select * from top_profitable_Director
 
 
----The most actors nationalities who participated in a specific genre movies
+--- 22 The most actors nationalities who participated in a specific genre movies
 create or alter proc most_actor_nationality 
 @gen varchar(50)  
 as
@@ -420,7 +420,7 @@ end
 exec most_actor_nationality @gen = 'Adventure'
 
 
---writers who have high rated movies (rating > 8) and the number of those movies
+-- 23 writers who have high rated movies (rating > 8) and the number of those movies
 
 SELECT we.Writer_ID, we.Writer_Fname, we.Writer_Lname, COUNT(mw.Movie_ID) AS High_Rated_Movies
 FROM writer we
